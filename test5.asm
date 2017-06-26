@@ -26,7 +26,7 @@ LINE04 EqU 90H
 
 ;Constanly enable 1 to A in LED matrix
 mov output_y, #01h
-mov count, #04h
+mov count, #03h
 mov count2, #04h
 jmp init
 
@@ -66,9 +66,10 @@ init:
 	mov output_x, #0FFh
 
 start:
-	
+	mov output_y,#01h
 	lcall wait
 	mov A, R7
+	jb P1.7,start
 checkifwin:
 	jmp iswin
 checkiflost:
@@ -80,16 +81,13 @@ iswin:
 	jmp win
 random:
 	MOV A, COUNT
-	JZ random1
+	JZ random4
+	SUBB a, #01
+	JZ random3
+	SUBB a, #01
+	JZ random2
 	SUBB a, #01
 	JZ random1
-	SUBB a, #01
-	JZ random1
-	SUBB a, #01
-	JZ random1
-	SUBB a, #01
-	JZ random1
-
 	mov output_x, R2
 	lcall wait
 	mov R0, output_x
@@ -97,8 +95,7 @@ random:
 	anl A, R0
 	mov R0, A
 	mov output_x, #0FFh
-	jmp eingabe
-
+	jmp anzeige1
 random1:	
 	dec R2
 	inc R5
@@ -107,15 +104,12 @@ random1:
 	mov R2, A
 	mov output_x, R2
 	mov A, input
-	cjne A, #00h, random1
+	jnb P1.7, random1
 	mov LINE1, R2
 	dec COUNT
 	jmp random
 random2:	
-	mov output_y, #01h
-	mov output_X, line1
-	lcall wait
-	mov output_y, #02h
+
 	dec R2
 	inc R5
 	mov A, R2
@@ -123,18 +117,12 @@ random2:
 	mov R2, A
 	mov output_x, R2
 	mov A, input
-	cjne A, #00h, random2
+	jb P1.7, random2
 	mov LINE2, R2
 	dec COUNT
 	jmp random
 random3:	
-	mov output_y, #01h
-	mov output_X, line1
-	lcall wait
-	mov output_y, #02h
-	mov output_x, line2
-	lcall wait
-	mov output_y, #04h
+
 	dec R2
 	inc R5
 	mov A, R2
@@ -142,11 +130,24 @@ random3:
 	mov R2, A
 	mov output_x, R2
 	mov A, input
-	cjne A, #00h, random3
+	jnb P1.7, random3
 	mov LINE3, R2
 	dec COUNT
 	jmp random
 random4:	
+
+	dec R2
+	inc R5
+	mov A, R2
+	add A, R5
+	mov R2, A
+	mov output_x, R2
+	mov A, input
+	jb P1.7, random4
+	mov LINE4, R2
+	dec COUNT
+	jmp random
+anzeige1:
 	mov output_y, #01h
 	mov output_X, line1
 	lcall wait
@@ -157,18 +158,8 @@ random4:
 	mov output_x, line3
 	lcall wait
 	mov output_y, #08h
-	dec R2
-	inc R5
-	mov A, R2
-	add A, R5
-	mov R2, A
-	mov output_x, R2
-	mov A, input
-	cjne A, #00h, random4
-	mov LINE4, R2
-	dec COUNT
-	jmp random
-
+	jnb P1.7, anzeige1
+	jmp eingabe
 eingabe: ;Eingabe des Musterrs
 	MoV count, #04h
 zeile_0:
@@ -182,9 +173,10 @@ zeile_0:
 	SUBB a, #01
 	JZ Zeile_1
 zeile_1: 
+	mov output_y,#01h
 	mov A, input
 	mov output_x, A
-	jnb P1.7, zeile_1
+	jb P1.7, zeile_1
 	mov line01, A
 	dec count
 	jmp zeile_0
@@ -197,7 +189,7 @@ zeile_2:
 	mov output_x, A
 	lcall wait
 	mov line02, A
-	jb P1.7, zeile_2
+	jnb P1.7, zeile_2
 	dec count
 	jmp zeile_0
 zeile_3: 
@@ -211,7 +203,7 @@ zeile_3:
 	mov A, input
 	mov output_x, A
 	lcall wait
-	jnb P1.7, zeile_3
+	jb P1.7, zeile_3
 	mov line03, A
 	dec count
 	jmp zeile_0
@@ -229,7 +221,7 @@ zeile_4:
 	mov A, input
 	mov output_x, A
 	lcall wait
-	jb P1.7, zeile_4
+	jnb P1.7, zeile_4
 	mov line04, A
 	
 abfrage: 
